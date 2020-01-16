@@ -136,8 +136,9 @@ def main():
 
     # create model
     def create_model(num_classes, ema=False):
-        model = MobileNet(num_classes)
+        model = DenseNet121(num_classes)
         model = torch.nn.DataParallel(model).cuda()
+        #model = model.cuda()
 
         if ema:
             for param in model.parameters():
@@ -146,12 +147,14 @@ def main():
         return model
 
     model = create_model(num_classes=num_classes, ema=False)
+    print("num classes:", num_classes)
     if args.model == 'mixmatch':
         ema_model = create_model(num_classes=num_classes, ema=True)
     if args.model == 'mt':
         import copy  
         model_teacher = copy.deepcopy(model)
         model_teacher = torch.nn.DataParallel(model_teacher).cuda()
+        #model_teacher = model.cuda()
     
     ckpt_dir = args.out
     if not os.path.exists(ckpt_dir):
@@ -180,7 +183,7 @@ def main():
                                     momentum=args.momentum,
                                     weight_decay=args.weight_decay)
     if args.model == 'mixmatch':
-        ema_optimizer = WeightEMA(model, ema_model, alpha=args.ema_decay)
+        ema_optimizer = WeightEMA(model, ema_model, args, alpha=args.ema_decay)
 
     # resume
     title = 'ssl-NIH'
@@ -687,6 +690,7 @@ def train_mixmatch(label_loader, unlabel_loader, num_classes, model, optimizer, 
                    data_time=data_time, loss=losses, loss_x=losses_x, loss_u=losses_u,
                    ws=weights, top1=top1))
     
+    ema_optimizer.step(bn=True)
     return top1.avg, losses.avg, losses_x.avg, losses_u.avg, weights.avg
 
 
@@ -805,11 +809,11 @@ def update_ema_variables(model, model_teacher, alpha, global_step):
         param_t.data.mul_(alpha).add_(1 - alpha, param.data)
 
 class WeightEMA(object):
-    def __init__(self, model, ema_model, alpha=0.999):
+    def __init__(self, model, ema_model, args, alpha=0.999):
         self.model = model
         self.ema_model = ema_model
         self.alpha = alpha
-        self.tmp_model = MobileNet(num_classes=16).cuda()
+        self.tmp_model = DenseNet121(num_classes=3).cuda()  # TODO
         self.wd = 0.02 * args.lr
 
         for param, ema_param in zip(self.model.parameters(), self.ema_model.parameters()):
