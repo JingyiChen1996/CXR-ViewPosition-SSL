@@ -1,6 +1,7 @@
 # CXR-ViewPosition-SSL
-Comparing semi-supervised learning algorithms for CXR view position classification
-Data: Stanford dataset (To fasten training, I only used 10,000 images for training)
+Comparing semi-supervised learning algorithms for CXR view position classification          
+### Data
+Stanford dataset (To fasten training, I only used 10,000 images for training)
 
 ### Supervised learning
 ```
