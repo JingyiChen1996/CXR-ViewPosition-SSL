@@ -71,8 +71,8 @@ def main():
 
     # data
     num_classes = 3
-    train_set = CxrDataset(STANFORD_CXR_BASE, "~/cxr-jingyi/ViewPosition/Stanford_train_small.csv")
-    val_set = CxrDataset(STANFORD_CXR_BASE, "~/cxr-jingyi/ViewPosition/Stanford_valid.csv")
+    train_set = CxrDataset(STANFORD_CXR_BASE, "data/Stanford_train_small.csv")
+    val_set = CxrDataset(STANFORD_CXR_BASE, "data/Stanford_valid.csv")
 
     trainloader = data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
     val_loader = data.DataLoader(val_set, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
